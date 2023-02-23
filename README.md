@@ -30,5 +30,4 @@ This app uses the following dependencies:
 - `font_awesome_flutter: ^10.4.0`: A package that provides a collection of customizable icons that can be used in Flutter apps.
 - `cached_network_image: ^3.2.3`: A package that provides image loading and caching functionality for images loaded from the internet.
 - `video_player: ^2.5.1`: A Flutter plugin that provides video playback functionality.
-
-
+- `cube_transition: "^1.0.0"`: A 3D Cube transition for PageView and PageRoute.
