@@ -4,6 +4,7 @@ import 'package:video_player/video_player.dart';
 import '../models/story_model.dart';
 import '../models/user_model.dart';
 import '../data.dart';
+import 'package:cube_transition/cube_transition.dart';
 
 class StoryScreen extends StatefulWidget {
   List<Story> stories;
@@ -167,18 +168,21 @@ class _StoryScreenState extends State<StoryScreen>
         if (widget.user.id > 1) {
           stories[widget.user.id - 1].currentIndex = widget.currentIndex;
 
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => StoryScreen(
-                        stories: widget.prevStories,
-                        prevStories: widget.user.id < 3
-                            ? []
-                            : stories[widget.user.id - 3].storyList,
-                        nextStories: widget.stories,
-                        user: stories[widget.user.id - 2].user,
-                        currentIndex: stories[widget.user.id - 2].currentIndex,
-                      )));
+          Navigator.of(context).push(
+            CubePageRoute(
+              enterPage: StoryScreen(
+                stories: widget.prevStories,
+                prevStories: widget.user.id < 3
+                    ? []
+                    : stories[widget.user.id - 3].storyList,
+                nextStories: widget.stories,
+                user: stories[widget.user.id - 2].user,
+                currentIndex: stories[widget.user.id - 2].currentIndex,
+              ),
+              // exitPage: this,
+              duration: const Duration(milliseconds: 400),
+            ),
+          );
         } else {
           Navigator.of(context).popUntil((route) => route.isFirst);
         }
@@ -196,18 +200,21 @@ class _StoryScreenState extends State<StoryScreen>
         _loadStory(story: widget.stories[widget.currentIndex]);
         if (widget.user.id != stories.length) {
           stories[widget.user.id - 1].currentIndex = widget.currentIndex;
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => StoryScreen(
-                        stories: widget.nextStories,
-                        prevStories: widget.stories,
-                        nextStories: widget.user.id == stories.length - 1
-                            ? []
-                            : stories[widget.user.id + 1].storyList,
-                        user: stories[widget.user.id].user,
-                        currentIndex: stories[widget.user.id].currentIndex,
-                      )));
+          Navigator.of(context).push(
+            CubePageRoute(
+              enterPage: StoryScreen(
+                stories: widget.nextStories,
+                prevStories: widget.stories,
+                nextStories: widget.user.id == stories.length - 1
+                    ? []
+                    : stories[widget.user.id + 1].storyList,
+                user: stories[widget.user.id].user,
+                currentIndex: stories[widget.user.id].currentIndex,
+              ),
+              // exitPage: this,
+              duration: const Duration(milliseconds: 400),
+            ),
+          );
         } else {
           Navigator.of(context).popUntil((route) => route.isFirst);
         }
