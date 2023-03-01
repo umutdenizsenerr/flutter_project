@@ -5,6 +5,8 @@ import '../models/story_model.dart';
 import '../models/user_model.dart';
 import '../data.dart';
 import 'package:cube_transition/cube_transition.dart';
+import '../widgets/animated_bar.dart';
+import '../widgets/user_info.dart';
 
 class StoryScreen extends StatefulWidget {
   List<Story> stories;
@@ -279,109 +281,5 @@ class _StoryScreenState extends State<StoryScreen>
         curve: Curves.easeIn,
       );
     }
-  }
-}
-
-class AnimatedBar extends StatelessWidget {
-  final AnimationController animController;
-  final int position;
-  final int currentIndex;
-
-  const AnimatedBar({
-    required this.animController,
-    required this.position,
-    required this.currentIndex,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Flexible(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 1.5),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Stack(
-              children: <Widget>[
-                _buildContainer(
-                  double.infinity,
-                  position < currentIndex
-                      ? Colors.white
-                      : Colors.white.withOpacity(0.5),
-                ),
-                position == currentIndex
-                    ? AnimatedBuilder(
-                        animation: animController,
-                        builder: (context, child) {
-                          return _buildContainer(
-                            constraints.maxWidth * animController.value,
-                            Colors.white,
-                          );
-                        },
-                      )
-                    : const SizedBox.shrink(),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Container _buildContainer(double width, Color color) {
-    return Container(
-      height: 5.0,
-      width: width,
-      decoration: BoxDecoration(
-        color: color,
-        border: Border.all(
-          color: Colors.black26,
-          width: 0.8,
-        ),
-        borderRadius: BorderRadius.circular(3.0),
-      ),
-    );
-  }
-}
-
-class UserInfo extends StatelessWidget {
-  final User user;
-
-  const UserInfo({
-    required this.user,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: <Widget>[
-        CircleAvatar(
-          radius: 20.0,
-          backgroundColor: Colors.grey[300],
-          backgroundImage: user.profileImageUrl.isNotEmpty
-              ? NetworkImage(user.profileImageUrl)
-              : AssetImage('assets/images/${user.path}') as ImageProvider,
-        ),
-        const SizedBox(width: 10.0),
-        Expanded(
-          child: Text(
-            user.name,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18.0,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        IconButton(
-          icon: const Icon(
-            Icons.close,
-            size: 30.0,
-            color: Colors.white,
-          ),
-          onPressed: () =>
-              Navigator.of(context).popUntil((route) => route.isFirst),
-        ),
-      ],
-    );
   }
 }
