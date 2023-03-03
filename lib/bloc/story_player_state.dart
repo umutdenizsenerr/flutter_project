@@ -1,20 +1,14 @@
 import '../models/story_model.dart';
 import '../models/user_model.dart';
-import '../screens/story_screen.dart';
 
 class StoryPlayerState {
   final List<Story> currentStories;
   final User currentUser;
   final int currentIndex;
   StoryPlayerState({
-    this.currentStories = const [],
-    this.currentUser = const User(
-      id: 0,
-      name: '',
-      profileImageUrl: '',
-      path: '',
-    ),
-    this.currentIndex = 0,
+    required this.currentStories,
+    required this.currentUser,
+    required this.currentIndex,
   });
 
   StoryPlayerState copyWith({

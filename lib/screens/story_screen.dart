@@ -180,7 +180,7 @@ class _StoryScreenState extends State<StoryScreen>
           Navigator.of(context).push(
             CubePageRoute(
               enterPage: BlocProvider(
-                create: (_) => StoryPlayerBloc(),
+                create: (_) => StoryPlayerBloc(userId: widget.user.id - 2),
                 child: StoryScreen(
                   stories: stories[widget.user.id - 2].storyList,
                   user: stories[widget.user.id - 2].user,
@@ -212,7 +212,7 @@ class _StoryScreenState extends State<StoryScreen>
           Navigator.of(context).push(
             CubePageRoute(
               enterPage: BlocProvider(
-                  create: (_) => StoryPlayerBloc(),
+                  create: (_) => StoryPlayerBloc(userId: widget.user.id),
                   child: StoryScreen(
                     stories: stories[widget.user.id].storyList,
                     user: stories[widget.user.id].user,

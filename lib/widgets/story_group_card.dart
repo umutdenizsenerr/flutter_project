@@ -27,7 +27,9 @@ class StoryGroupCard extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                     builder: (context) => BlocProvider(
-                          create: (_) => StoryPlayerBloc(),
+                          create: (_) => StoryPlayerBloc(
+                            userId: user.id,
+                          ),
                           child: StoryScreen(
                             stories: storyList,
                             user: user,
