@@ -40,12 +40,6 @@ class HomeScreen extends StatelessWidget {
                   (storyGroup) => StoryGroupCard(
                     user: storyGroup.user,
                     storyList: storyGroup.storyList,
-                    prevList: storyGroup.user.id - 1 == 0
-                        ? []
-                        : stories[storyGroup.user.id - 2].storyList,
-                    nextList: storyGroup.user.id == stories.length
-                        ? []
-                        : stories[storyGroup.user.id].storyList,
                   ),
                 )
                 .toList()),

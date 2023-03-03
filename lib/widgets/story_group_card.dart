@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_project/bloc/story_player_bloc.dart';
 import '../data.dart';
 import '../screens/story_screen.dart';
 import '/models/user_model.dart';
@@ -7,14 +9,10 @@ import '/models/story_model.dart';
 class StoryGroupCard extends StatelessWidget {
   final User user;
   final List<Story> storyList;
-  final List<Story> prevList;
-  final List<Story> nextList;
 
   StoryGroupCard({
     required this.user,
     required this.storyList,
-    required this.prevList,
-    required this.nextList,
   });
 
   @override
@@ -28,14 +26,14 @@ class StoryGroupCard extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => StoryScreen(
-                    stories: storyList,
-                    prevStories: prevList,
-                    nextStories: nextList,
-                    user: user,
-                    currentIndex: 0,
-                  ),
-                ),
+                    builder: (context) => BlocProvider(
+                          create: (_) => StoryPlayerBloc(),
+                          child: StoryScreen(
+                            stories: storyList,
+                            user: user,
+                            currentIndex: 0,
+                          ),
+                        )),
               );
             },
             child: CircleAvatar(

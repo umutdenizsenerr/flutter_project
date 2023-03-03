@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:video_player/video_player.dart';
 import '../models/story_model.dart';
 import '../models/user_model.dart';
@@ -7,19 +8,17 @@ import '../data.dart';
 import 'package:cube_transition/cube_transition.dart';
 import '../widgets/animated_bar.dart';
 import '../widgets/user_info.dart';
+import '../bloc/story_player_bloc.dart';
+import '../bloc/story_player_event.dart';
 
 class StoryScreen extends StatefulWidget {
   List<Story> stories;
-  List<Story> prevStories;
-  List<Story> nextStories;
   User user;
   int currentIndex;
 
   StoryScreen({
     super.key,
     required this.stories,
-    required this.prevStories,
-    required this.nextStories,
     required this.user,
     required this.currentIndex,
   });
@@ -82,6 +81,7 @@ class _StoryScreenState extends State<StoryScreen>
   @override
   Widget build(BuildContext context) {
     final Story story = widget.stories[widget.currentIndex];
+    final blocState = context.watch<StoryPlayerBloc>().state;
 
     return Scaffold(
       body: GestureDetector(
@@ -125,9 +125,13 @@ class _StoryScreenState extends State<StoryScreen>
                           child: VideoPlayer(_videoPlayerController),
                         ),
                       );
+                    } else {
+                      return const FittedBox(
+                        fit: BoxFit.cover,
+                        child: CircularProgressIndicator(),
+                      );
                     }
                 }
-                return const SizedBox.shrink();
               }),
           Positioned(
               top: 40.0,
@@ -160,8 +164,11 @@ class _StoryScreenState extends State<StoryScreen>
   }
 
   void _goPrevStory(isSwiped) {
+    // final blocState = context.watch<StoryPlayerBloc>().state;
     setState(() {
+      // print(blocState.currentStories);
       if (widget.currentIndex >= 1 && !isSwiped) {
+        context.read<StoryPlayerBloc>().add(GoToPreviousStoryEvent());
         widget.currentIndex--;
         _loadStory(story: widget.stories[widget.currentIndex]);
       } else {
@@ -172,16 +179,14 @@ class _StoryScreenState extends State<StoryScreen>
 
           Navigator.of(context).push(
             CubePageRoute(
-              enterPage: StoryScreen(
-                stories: widget.prevStories,
-                prevStories: widget.user.id < 3
-                    ? []
-                    : stories[widget.user.id - 3].storyList,
-                nextStories: widget.stories,
-                user: stories[widget.user.id - 2].user,
-                currentIndex: stories[widget.user.id - 2].currentIndex,
+              enterPage: BlocProvider(
+                create: (_) => StoryPlayerBloc(),
+                child: StoryScreen(
+                  stories: stories[widget.user.id - 2].storyList,
+                  user: stories[widget.user.id - 2].user,
+                  currentIndex: stories[widget.user.id - 2].currentIndex,
+                ),
               ),
-              // exitPage: this,
               duration: const Duration(milliseconds: 400),
             ),
           );
@@ -195,6 +200,8 @@ class _StoryScreenState extends State<StoryScreen>
   void _goNextStory(isSwiped) {
     setState(() {
       if (widget.currentIndex < widget.stories.length - 1 && !isSwiped) {
+        context.read<StoryPlayerBloc>().add(GoToNextStoryEvent());
+
         widget.currentIndex++;
         _loadStory(story: widget.stories[widget.currentIndex]);
       } else {
@@ -204,16 +211,13 @@ class _StoryScreenState extends State<StoryScreen>
           stories[widget.user.id - 1].currentIndex = widget.currentIndex;
           Navigator.of(context).push(
             CubePageRoute(
-              enterPage: StoryScreen(
-                stories: widget.nextStories,
-                prevStories: widget.stories,
-                nextStories: widget.user.id == stories.length - 1
-                    ? []
-                    : stories[widget.user.id + 1].storyList,
-                user: stories[widget.user.id].user,
-                currentIndex: stories[widget.user.id].currentIndex,
-              ),
-              // exitPage: this,
+              enterPage: BlocProvider(
+                  create: (_) => StoryPlayerBloc(),
+                  child: StoryScreen(
+                    stories: stories[widget.user.id].storyList,
+                    user: stories[widget.user.id].user,
+                    currentIndex: stories[widget.user.id].currentIndex,
+                  )),
               duration: const Duration(milliseconds: 400),
             ),
           );
