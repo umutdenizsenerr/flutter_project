@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:video_player/video_player.dart';
+import '../bloc/story_player_state.dart';
 import '../models/story_model.dart';
 import '../models/user_model.dart';
 import '../data.dart';
@@ -60,12 +61,8 @@ class _StoryScreenState extends State<StoryScreen>
       if (status == AnimationStatus.completed) {
         _animationController.stop();
         _animationController.reset();
-        setState(() {
-          if (widget.currentIndex < widget.stories.length - 1) {
-            widget.currentIndex++;
-            _loadStory(story: widget.stories[widget.currentIndex]);
-          }
-        });
+
+        // _loadStory(state);
       }
     });
   }
@@ -80,203 +77,163 @@ class _StoryScreenState extends State<StoryScreen>
 
   @override
   Widget build(BuildContext context) {
-    final Story story = widget.stories[widget.currentIndex];
-    final blocState = context.watch<StoryPlayerBloc>().state;
+    // Story currentStory = widget.stories[widget.currentIndex];
 
     return Scaffold(
       body: GestureDetector(
-        onTapDown: (details) => _onTapDown(details, story),
+        onTapDown: (details) => _onTapDown(details),
         onPanUpdate: (details) {
           // Swiping in right direction.
           if (details.delta.dx > 0) {
-            _goPrevStory(true);
+            BlocProvider.of<StoryPlayerBloc>(context)
+                .add(GoToPreviousStoryPageEvent());
           }
 
           // Swiping in left direction.
           if (details.delta.dx < 0) {
-            _goNextStory(true);
+            BlocProvider.of<StoryPlayerBloc>(context)
+                .add(GoToNextStoryPageEvent());
           }
         },
-        onTapUp: (details) => _onTapUp(story),
-        child: Stack(children: <Widget>[
-          PageView.builder(
-              controller: _pageController,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: widget.stories.length,
-              itemBuilder: (context, index) {
-                switch (story.media) {
-                  case MediaType.image:
-                    return story.url.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: story.url,
+        onTapUp: (details) => _onTapUp(),
+        child: BlocConsumer<StoryPlayerBloc, StoryPlayerState>(
+          listener: (context, state) {
+            _loadStory(blocState: state);
+          },
+          builder: (context, state) {
+            return Stack(children: <Widget>[
+              PageView.builder(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: widget.stories.length,
+                  itemBuilder: (context, index) {
+                    switch (state.currentStories[state.currentIndex].media) {
+                      case MediaType.image:
+                        return state.currentStories[state.currentIndex].url
+                                .isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: state
+                                    .currentStories[state.currentIndex].url,
+                                fit: BoxFit.cover,
+                              )
+                            : Image.asset(
+                                'assets/images/${state.currentStories[state.currentIndex].path}',
+                                fit: BoxFit.cover,
+                              );
+                      case MediaType.video:
+                        if (_videoPlayerController.value.isInitialized) {
+                          return FittedBox(
                             fit: BoxFit.cover,
-                          )
-                        : Image.asset(
-                            'assets/images/${story.path}',
-                            fit: BoxFit.cover,
+                            child: SizedBox(
+                              width: _videoPlayerController.value.size.width,
+                              height: _videoPlayerController.value.size.height,
+                              child: VideoPlayer(_videoPlayerController),
+                            ),
                           );
-                  case MediaType.video:
-                    if (_videoPlayerController.value.isInitialized) {
-                      return FittedBox(
-                        fit: BoxFit.cover,
-                        child: SizedBox(
-                          width: _videoPlayerController.value.size.width,
-                          height: _videoPlayerController.value.size.height,
-                          child: VideoPlayer(_videoPlayerController),
-                        ),
-                      );
-                    } else {
-                      return const FittedBox(
-                        fit: BoxFit.cover,
-                        child: CircularProgressIndicator(),
-                      );
+                        } else {
+                          return const FittedBox(
+                            fit: BoxFit.cover,
+                            child: CircularProgressIndicator(),
+                          );
+                        }
                     }
-                }
-              }),
-          Positioned(
-              top: 40.0,
-              left: 10.0,
-              right: 10.0,
-              child: Row(
-                children: widget.stories
-                    .asMap()
-                    .map((i, e) => MapEntry(
-                          i,
-                          AnimatedBar(
-                            animController: _animationController,
-                            position: i,
-                            currentIndex: widget.currentIndex,
-                          ),
-                        ))
-                    .values
-                    .toList(),
-              )),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 15.5,
-              vertical: 50.0,
-            ),
-            child: UserInfo(user: widget.user),
-          ),
-        ]),
+                  }),
+              Positioned(
+                  top: 40.0,
+                  left: 10.0,
+                  right: 10.0,
+                  child: Row(
+                    children: widget.stories
+                        .asMap()
+                        .map((i, e) => MapEntry(
+                              i,
+                              AnimatedBar(
+                                animController: _animationController,
+                                position: i,
+                                currentIndex: state.currentIndex,
+                              ),
+                            ))
+                        .values
+                        .toList(),
+                  )),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 15.5,
+                  vertical: 50.0,
+                ),
+                child: UserInfo(user: widget.user),
+              ),
+            ]);
+          },
+        ),
       ),
     );
   }
 
-  void _goPrevStory(isSwiped) {
-    // final blocState = context.watch<StoryPlayerBloc>().state;
-    setState(() {
-      // print(blocState.currentStories);
-      if (widget.currentIndex >= 1 && !isSwiped) {
-        context.read<StoryPlayerBloc>().add(GoToPreviousStoryEvent());
-        widget.currentIndex--;
-        _loadStory(story: widget.stories[widget.currentIndex]);
-      } else {
-        _loadStory(story: widget.stories[widget.currentIndex]);
-
-        if (widget.user.id > 1) {
-          stories[widget.user.id - 1].currentIndex = widget.currentIndex;
-
-          Navigator.of(context).push(
-            CubePageRoute(
-              enterPage: BlocProvider(
-                create: (_) => StoryPlayerBloc(userId: widget.user.id - 2),
-                child: StoryScreen(
-                  stories: stories[widget.user.id - 2].storyList,
-                  user: stories[widget.user.id - 2].user,
-                  currentIndex: stories[widget.user.id - 2].currentIndex,
-                ),
-              ),
-              duration: const Duration(milliseconds: 400),
-            ),
-          );
-        } else {
-          Navigator.of(context).popUntil((route) => route.isFirst);
-        }
-      }
-    });
-  }
-
-  void _goNextStory(isSwiped) {
-    setState(() {
-      if (widget.currentIndex < widget.stories.length - 1 && !isSwiped) {
-        context.read<StoryPlayerBloc>().add(GoToNextStoryEvent());
-
-        widget.currentIndex++;
-        _loadStory(story: widget.stories[widget.currentIndex]);
-      } else {
-        //go to next story group
-        _loadStory(story: widget.stories[widget.currentIndex]);
-        if (widget.user.id != stories.length) {
-          stories[widget.user.id - 1].currentIndex = widget.currentIndex;
-          Navigator.of(context).push(
-            CubePageRoute(
-              enterPage: BlocProvider(
-                  create: (_) => StoryPlayerBloc(userId: widget.user.id),
-                  child: StoryScreen(
-                    stories: stories[widget.user.id].storyList,
-                    user: stories[widget.user.id].user,
-                    currentIndex: stories[widget.user.id].currentIndex,
-                  )),
-              duration: const Duration(milliseconds: 400),
-            ),
-          );
-        } else {
-          Navigator.of(context).popUntil((route) => route.isFirst);
-        }
-      }
-    });
-  }
-
-  void _onTapDown(TapDownDetails details, Story story) {
+  void _onTapDown(TapDownDetails details) {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double dx = details.globalPosition.dx;
 
     if (dx < screenWidth / 4) {
-      _goPrevStory(false);
+      BlocProvider.of<StoryPlayerBloc>(context).add(GoToPreviousStoryEvent());
     } else if (dx > 3 * screenWidth / 4) {
-      _goNextStory(false);
+      BlocProvider.of<StoryPlayerBloc>(context).add(GoToNextStoryEvent());
     } else {
-      if (story.media == MediaType.video) {
-        _videoPlayerController.pause();
-        _animationController.stop();
-      } else {
-        _animationController.stop();
-      }
+      _videoPlayerController.pause();
+      _animationController.stop();
     }
   }
 
-  void _onTapUp(Story story) {
-    if (story.media == MediaType.video) {
-      _videoPlayerController.play();
-    }
+  void _onTapUp() {
+    _videoPlayerController.play();
     _animationController.forward();
   }
 
-  void _loadStory({required Story story, bool animateToPage = true}) {
+  void _loadStory({
+    required blocState,
+    bool animateToPage = true,
+  }) {
+    Story story = blocState.currentStories[blocState.currentIndex];
     _animationController.stop();
     _animationController.reset();
-    switch (story.media) {
-      case MediaType.image:
-        _animationController.duration = const Duration(seconds: 5);
-        _animationController.forward();
-        break;
-      case MediaType.video:
-        _videoPlayerController.dispose();
-        _videoPlayerController = story.url.isNotEmpty
-            ? VideoPlayerController.network(story.url)
-            : VideoPlayerController.asset('assets/videos/${story.path}');
-        _videoPlayerController.initialize().then((_) {
-          setState(() {});
-          if (_videoPlayerController.value.isInitialized) {
-            _animationController.duration =
-                _videoPlayerController.value.duration;
-            _videoPlayerController.play();
-            _animationController.forward();
-          }
-        });
+    if (blocState.isSwiped) {
+      Navigator.of(context).push(
+        CubePageRoute(
+          enterPage: BlocProvider(
+              create: (_) => StoryPlayerBloc(userId: blocState.currentUser.id),
+              child: StoryScreen(
+                stories: blocState.currentStories,
+                user: blocState.currentUser,
+                currentIndex: blocState.currentIndex,
+              )),
+          duration: const Duration(milliseconds: 400),
+        ),
+      );
+    } else if (blocState.isEnded) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } else {
+      switch (story.media) {
+        case MediaType.image:
+          _animationController.duration = const Duration(seconds: 5);
+          _animationController.forward();
+          break;
+        case MediaType.video:
+          _videoPlayerController.dispose();
+          _videoPlayerController = story.url.isNotEmpty
+              ? VideoPlayerController.network(story.url)
+              : VideoPlayerController.asset('assets/videos/${story.path}');
+          _videoPlayerController.initialize().then((_) {
+            setState(() {});
+            if (_videoPlayerController.value.isInitialized) {
+              _animationController.duration =
+                  _videoPlayerController.value.duration;
+              _videoPlayerController.play();
+              _animationController.forward();
+            }
+          });
 
-        break;
+          break;
+      }
     }
     if (animateToPage) {
       _pageController.animateToPage(

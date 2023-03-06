@@ -1,11 +1,15 @@
-abstract class StoryPlayerEvent {
-  const StoryPlayerEvent();
-}
+import 'package:equatable/equatable.dart';
 
-class AnimationCompletedEvent extends StoryPlayerEvent {}
+abstract class StoryPlayerEvent extends Equatable {
+  const StoryPlayerEvent();
+  @override
+  List<Object?> get props => [];
+}
 
 class GoToPreviousStoryEvent extends StoryPlayerEvent {}
 
 class GoToNextStoryEvent extends StoryPlayerEvent {}
 
 class GoToPreviousStoryPageEvent extends StoryPlayerEvent {}
+
+class GoToNextStoryPageEvent extends StoryPlayerEvent {}
