@@ -77,8 +77,6 @@ class _StoryScreenState extends State<StoryScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Story currentStory = widget.stories[widget.currentIndex];
-
     return Scaffold(
       body: GestureDetector(
         onTapDown: (details) => _onTapDown(details),
@@ -107,17 +105,17 @@ class _StoryScreenState extends State<StoryScreen>
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: widget.stories.length,
                   itemBuilder: (context, index) {
-                    switch (state.currentStories[state.currentIndex].media) {
+                    Story currentStory =
+                        state.currentStories[state.currentIndex];
+                    switch (currentStory.media) {
                       case MediaType.image:
-                        return state.currentStories[state.currentIndex].url
-                                .isNotEmpty
+                        return currentStory.url.isNotEmpty
                             ? CachedNetworkImage(
-                                imageUrl: state
-                                    .currentStories[state.currentIndex].url,
+                                imageUrl: currentStory.url,
                                 fit: BoxFit.cover,
                               )
                             : Image.asset(
-                                'assets/images/${state.currentStories[state.currentIndex].path}',
+                                'assets/images/${currentStory.path}',
                                 fit: BoxFit.cover,
                               );
                       case MediaType.video:
