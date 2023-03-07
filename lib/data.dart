@@ -16,11 +16,7 @@ final List<StoryGroup> stories = [
             media: MediaType.image,
             duration: Duration(seconds: 13),
             path: 'mushroom.jpg'),
-        const Story(
-            url: '',
-            media: MediaType.video,
-            duration: Duration(seconds: 13),
-            path: 'seven_segment.mp4'),
+        const Story(url: '', media: MediaType.video, path: 'seven_segment.mp4'),
       ],
       user: const User(
           name: 'udsumut',
@@ -39,7 +35,6 @@ final List<StoryGroup> stories = [
             url:
                 'https://static.videezy.com/system/resources/previews/000/005/529/original/Reaviling_Sjusj%C3%B8en_Ski_Senter.mp4',
             media: MediaType.video,
-            duration: Duration(seconds: 5),
             path: ''),
         const Story(
             url: '',
@@ -63,11 +58,7 @@ final List<StoryGroup> stories = [
             media: MediaType.image,
             duration: Duration(seconds: 10),
             path: ''),
-        const Story(
-            url: '',
-            media: MediaType.video,
-            duration: Duration(seconds: 13),
-            path: 'kadebostany.mp4'),
+        const Story(url: '', media: MediaType.video, path: 'kadebostany.mp4'),
         const Story(
             url:
                 'https://images.unsplash.com/photo-1531694611353-d4758f86fa6d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=564&q=80',
@@ -92,7 +83,6 @@ final List<StoryGroup> stories = [
             url:
                 'https://static.videezy.com/system/resources/previews/000/007/536/original/rockybeach.mp4',
             media: MediaType.video,
-            duration: Duration(seconds: 13),
             path: ''),
       ],
       user: const User(
@@ -105,9 +95,20 @@ final List<StoryGroup> stories = [
       storyList: [
         const Story(
             url: '',
+            media: MediaType.image,
+            duration: Duration(seconds: 13),
+            path: 'boun_gate.jpeg'),
+        const Story(
+            url: '',
+            media: MediaType.image,
+            duration: Duration(seconds: 13),
+            path: 'oldudeniz.jpeg'),
+        const Story(
+            url:
+                'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
             media: MediaType.video,
-            duration: Duration(seconds: 8),
-            path: 'maraton.mp4'),
+            duration: Duration(seconds: 13),
+            path: ''),
       ],
       user: const User(
           name: 'aliozturk',

@@ -13,3 +13,5 @@ class GoToNextStoryEvent extends StoryPlayerEvent {}
 class GoToPreviousStoryPageEvent extends StoryPlayerEvent {}
 
 class GoToNextStoryPageEvent extends StoryPlayerEvent {}
+
+class CloseStoryEvent extends StoryPlayerEvent {}

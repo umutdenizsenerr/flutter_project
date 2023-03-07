@@ -5,7 +5,6 @@ import 'package:video_player/video_player.dart';
 import '../bloc/story_player_state.dart';
 import '../models/story_model.dart';
 import '../models/user_model.dart';
-import '../data.dart';
 import 'package:cube_transition/cube_transition.dart';
 import '../widgets/animated_bar.dart';
 import '../widgets/user_info.dart';
@@ -38,17 +37,24 @@ class _StoryScreenState extends State<StoryScreen>
   void initState() {
     super.initState();
     _pageController = PageController();
+    var currentState = context.read<StoryPlayerBloc>().state;
 
-    for (int i = 0; i < widget.stories.length; i++) {
-      if (widget.stories[i].media == MediaType.video) {
-        _videoPlayerController = widget.stories[i].url.isNotEmpty
-            ? VideoPlayerController.network(widget.stories[i].url)
+    for (int i = 0; i < currentState.currentStories.length; i++) {
+      if (currentState.currentStories[i].media == MediaType.video) {
+        _videoPlayerController = currentState.currentStories[i].url.isNotEmpty
+            ? VideoPlayerController.network(currentState.currentStories[i].url)
             : VideoPlayerController.asset(
-                'assets/videos/${widget.stories[i].path}');
+                'assets/videos/${currentState.currentStories[i].path}');
+        _videoPlayerController.initialize().then((value) => setState(() {}));
+        if (currentState.currentStories[currentState.currentIndex].media ==
+            MediaType.video) {
+          _videoPlayerController.play();
+        } else {
+          _videoPlayerController.pause();
+        }
       }
     }
 
-    _videoPlayerController.initialize().then((value) => setState(() {}));
     _animationController = AnimationController(
       vsync: this,
     );
@@ -56,13 +62,13 @@ class _StoryScreenState extends State<StoryScreen>
 
     _animationController.forward();
 
-    _videoPlayerController.play();
     _animationController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         _animationController.stop();
         _animationController.reset();
+        _videoPlayerController.pause();
 
-        // _loadStory(state);
+        BlocProvider.of<StoryPlayerBloc>(context).add(GoToNextStoryEvent());
       }
     });
   }
@@ -103,15 +109,26 @@ class _StoryScreenState extends State<StoryScreen>
               PageView.builder(
                   controller: _pageController,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: widget.stories.length,
+                  itemCount: state.currentStories.length,
                   itemBuilder: (context, index) {
                     Story currentStory =
                         state.currentStories[state.currentIndex];
                     switch (currentStory.media) {
                       case MediaType.image:
+                        _animationController.forward();
                         return currentStory.url.isNotEmpty
                             ? CachedNetworkImage(
                                 imageUrl: currentStory.url,
+                                progressIndicatorBuilder:
+                                    (context, url, downloadProgress) =>
+                                        const SizedBox(
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      color: Colors.grey,
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                ),
                                 fit: BoxFit.cover,
                               )
                             : Image.asset(
@@ -120,6 +137,7 @@ class _StoryScreenState extends State<StoryScreen>
                               );
                       case MediaType.video:
                         if (_videoPlayerController.value.isInitialized) {
+                          _animationController.forward();
                           return FittedBox(
                             fit: BoxFit.cover,
                             child: SizedBox(
@@ -129,9 +147,15 @@ class _StoryScreenState extends State<StoryScreen>
                             ),
                           );
                         } else {
-                          return const FittedBox(
-                            fit: BoxFit.cover,
-                            child: CircularProgressIndicator(),
+                          _animationController.stop();
+
+                          return const SizedBox(
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.grey,
+                                strokeWidth: 2,
+                              ),
+                            ),
                           );
                         }
                     }
@@ -141,7 +165,7 @@ class _StoryScreenState extends State<StoryScreen>
                   left: 10.0,
                   right: 10.0,
                   child: Row(
-                    children: widget.stories
+                    children: state.currentStories
                         .asMap()
                         .map((i, e) => MapEntry(
                               i,
@@ -159,7 +183,7 @@ class _StoryScreenState extends State<StoryScreen>
                   horizontal: 15.5,
                   vertical: 50.0,
                 ),
-                child: UserInfo(user: widget.user),
+                child: UserInfo(user: state.currentUser),
               ),
             ]);
           },
@@ -188,14 +212,16 @@ class _StoryScreenState extends State<StoryScreen>
   }
 
   void _loadStory({
-    required blocState,
+    blocState,
     bool animateToPage = true,
   }) {
     Story story = blocState.currentStories[blocState.currentIndex];
     _animationController.stop();
     _animationController.reset();
+    _videoPlayerController.pause();
+
     if (blocState.isSwiped) {
-      Navigator.of(context).push(
+      Navigator.of(context).pushReplacement(
         CubePageRoute(
           enterPage: BlocProvider(
               create: (_) => StoryPlayerBloc(userId: blocState.currentUser.id),
@@ -204,7 +230,6 @@ class _StoryScreenState extends State<StoryScreen>
                 user: blocState.currentUser,
                 currentIndex: blocState.currentIndex,
               )),
-          duration: const Duration(milliseconds: 400),
         ),
       );
     } else if (blocState.isEnded) {
@@ -224,7 +249,7 @@ class _StoryScreenState extends State<StoryScreen>
             setState(() {});
             if (_videoPlayerController.value.isInitialized) {
               _animationController.duration =
-                  _videoPlayerController.value.duration;
+                  story.duration ?? _videoPlayerController.value.duration;
               _videoPlayerController.play();
               _animationController.forward();
             }
@@ -235,7 +260,7 @@ class _StoryScreenState extends State<StoryScreen>
     }
     if (animateToPage) {
       _pageController.animateToPage(
-        widget.currentIndex,
+        blocState.currentIndex,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeIn,
       );

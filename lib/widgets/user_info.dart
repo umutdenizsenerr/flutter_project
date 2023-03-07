@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_project/bloc/story_player_event.dart';
+import '../bloc/story_player_bloc.dart';
+import '../bloc/story_player_state.dart';
 import '../models/user_model.dart';
 
 class UserInfo extends StatelessWidget {
@@ -30,15 +34,25 @@ class UserInfo extends StatelessWidget {
             ),
           ),
         ),
-        IconButton(
-          icon: const Icon(
-            Icons.close,
-            size: 30.0,
-            color: Colors.white,
-          ),
-          onPressed: () =>
-              Navigator.of(context).popUntil((route) => route.isFirst),
-        ),
+        BlocBuilder<StoryPlayerBloc, StoryPlayerState>(
+          builder: (context, state) {
+            return Container(
+              child: IconButton(
+                iconSize: 50,
+                icon: const Icon(
+                  Icons.close,
+                  size: 30.0,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  print('tiktik');
+                  BlocProvider.of<StoryPlayerBloc>(context)
+                      .add(CloseStoryEvent());
+                },
+              ),
+            );
+          },
+        )
       ],
     );
   }

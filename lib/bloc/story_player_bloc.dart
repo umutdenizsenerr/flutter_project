@@ -15,6 +15,7 @@ class StoryPlayerBloc extends Bloc<StoryPlayerEvent, StoryPlayerState> {
     on<GoToPreviousStoryPageEvent>(_onStoryScreenGoToPreviousStoryPage);
     on<GoToNextStoryEvent>(_onStoryScreenGoToNextStory);
     on<GoToNextStoryPageEvent>(_onStoryScreenGoToNextStoryPage);
+    on<CloseStoryEvent>(_onStoryScreenCloseStory);
   }
 
   void _onStoryScreenGoToPreviousStoryPage(
@@ -28,12 +29,6 @@ class StoryPlayerBloc extends Bloc<StoryPlayerEvent, StoryPlayerState> {
       currentUser: stories[state.currentUser.id - 2].user,
       isSwiped: true,
     ));
-    // emit(state.copyWith(
-    //   currentIndex:
-    //       state.currentIndex > 0 ? state.currentIndex - 1 : state.currentIndex,
-    // ));
-
-    // print(state.currentIndex);
   }
 
   void _onStoryScreenGoToPreviousStory(
@@ -94,7 +89,15 @@ class StoryPlayerBloc extends Bloc<StoryPlayerEvent, StoryPlayerState> {
       currentUser: stories[state.currentUser.id].user,
       isSwiped: true,
     ));
-    // print('sa');
-    // print(state.currentUser.id);
+  }
+
+  void _onStoryScreenCloseStory(
+    CloseStoryEvent event,
+    Emitter<StoryPlayerState> emit,
+  ) {
+    stories[state.currentUser.id - 1].currentIndex = state.currentIndex;
+    emit(state.copyWith(
+      isEnded: true,
+    ));
   }
 }

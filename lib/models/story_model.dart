@@ -6,12 +6,12 @@ class Story {
   final String url;
   final String path;
   final MediaType media;
-  final Duration duration;
+  final Duration? duration;
 
   const Story({
     required this.url,
     required this.path,
     required this.media,
-    required this.duration,
+    this.duration,
   });
 }
