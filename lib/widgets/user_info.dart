@@ -45,7 +45,6 @@ class UserInfo extends StatelessWidget {
                   color: Colors.white,
                 ),
                 onPressed: () {
-                  print('tiktik');
                   BlocProvider.of<StoryPlayerBloc>(context)
                       .add(CloseStoryEvent());
                 },
