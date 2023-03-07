@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_project/bloc/story_player_bloc.dart';
-import '../data.dart';
 import '../screens/story_screen.dart';
 import '/models/user_model.dart';
 import '/models/story_model.dart';
